@@ -1,0 +1,12 @@
+<!doctype html>
+<title>To‑Do List</title>
+<h1>My Tasks</h1>
+<ul>
+  {% for t in tasks %}
+    <li>{{ t }}</li>
+  {% endfor %}
+</ul>
+<form action="{{ url_for('add') }}" method="post">
+  <input name="task" placeholder="New task">
+  <button type="submit">Add</button>
+</form>

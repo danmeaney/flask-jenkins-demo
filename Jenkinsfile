@@ -29,8 +29,16 @@ pipeline {
 
     stage('Deploy (demo)') {
       steps {
+        // Kill any existing Python instances
         bat 'taskkill /F /IM python.exe || exit 0'
-        bat '.\\venv\\Scripts\\activate && start /B python app.py'
+
+        // Launch Flask in a new, minimized window that stays alive
+        bat """
+          start "flask-demo" /min cmd /c ^
+            "cd %WORKSPACE% && ^
+             call venv\\Scripts\\activate.bat && ^
+             python app.py"
+        """
       }
     }
   }

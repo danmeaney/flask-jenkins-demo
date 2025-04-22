@@ -29,30 +29,25 @@ pipeline {
 
     stage('Deploy (demo)') {
       steps {
-        // Kill any stray python processes
+        // kill any stray python.exe
         bat 'taskkill /F /IM python.exe || exit 0'
 
-        // Launch Flask in a new, minimized cmd window and capture logs
-        bat '''
-          start "flask-demo" /min cmd /c ^
-            "cd /d %WORKSPACE% && ^
-             call venv\\Scripts\\activate.bat && ^
-             pythonw app.py > flask.log 2>&1"
-        '''
+        // fire off Flask in the background and pipe its output into flask.log
+        bat 'start "flask-demo" /min cmd /c "cd /d %WORKSPACE% && call venv\\\\Scripts\\\\activate.bat && pythonw app.py > flask.log 2>&1"'
       }
     }
   }
 
   post {
+    always {
+      // make flask.log available under Artifacts
+      archiveArtifacts artifacts: 'flask.log', allowEmptyArchive: true
+    }
     success {
-      echo "Build succeeded!"
+      echo '✅ Build succeeded!'
     }
     failure {
-      echo "Build failed."
-    }
-    always {
-      // Archive the flask.log so you can download it from the build page
-      archiveArtifacts artifacts: 'flask.log', allowEmptyArchive: false
+      echo '❌ Build failed!'
     }
   }
 }

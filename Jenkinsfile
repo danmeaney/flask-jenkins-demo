@@ -29,20 +29,18 @@ pipeline {
 
     stage('Deploy (demo)') {
       steps {
-        // kill any stray python
+        // kill any stray Flask/python processes
         bat 'taskkill /F /IM python.exe || exit 0'
-        // start Flask headless and log to flask.log
-        bat """
-          cd /d %WORKSPACE% && ^
-          call venv\\Scripts\\activate && ^
-          start "" /min pythonw app.py 1> flask.log 2>&1
-        """
+
+        // cd into workspace, activate venv, then start pythonw in the background
+        // redirect both stdout & stderr into flask.log
+        bat 'cd /d %WORKSPACE% && call venv\\Scripts\\activate && start "" /min pythonw app.py 1> flask.log 2>&1'
       }
     }
   }
 
   post {
-    // always archive flask.log whether build passes or fails
+    // make sure we always archive the log so you can inspect it
     always {
       archiveArtifacts artifacts: 'flask.log', fingerprint: true
     }

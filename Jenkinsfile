@@ -10,8 +10,9 @@ pipeline {
 
     stage('Setup Python') {
       steps {
-        // Create virtualenv and install dependencies
-        bat 'python -m venv venv'
+        // Recreate venv using --copies to avoid permission issues
+        bat 'python -m venv --copies venv'
+        // Activate and install dependencies
         bat 'call venv\\Scripts\\activate.bat && pip install -r requirements.txt'
       }
     }
@@ -32,23 +33,18 @@ pipeline {
       steps {
         // Kill any old Python processes
         bat 'taskkill /F /IM python.exe || exit 0'
-
-        // Start Flask in background via pythonw and capture logs
-        bat '''
-          cd %WORKSPACE% && ^
-          call venv\\Scripts\\activate.bat && ^
-          start "" /min pythonw app.py > flask.log 2>&1
-        '''
+        // Start Flask in the background with pythonw, logging to flask.log
+        bat 'cd %WORKSPACE% && call venv\\Scripts\\activate.bat && start "" /min pythonw app.py > flask.log 2>&1'
       }
     }
   }
 
   post {
     success {
-      echo "Build succeeded!"
+      echo 'Build succeeded!'
     }
     failure {
-      echo "Build failed."
+      echo 'Build failed.'
     }
   }
 }

@@ -33,18 +33,17 @@ pipeline {
         bat 'taskkill /F /IM python.exe || exit 0'
 
         // Launch Flask in a new, minimized window that stays alive
-        bat """
-          start "flask-demo" /min cmd /c ^
-            "cd %WORKSPACE% && ^
-             call venv\\Scripts\\activate.bat && ^
-             python app.py"
-        """
+        bat 'start "flask-demo" /min cmd /c "cd %WORKSPACE% && call venv\\Scripts\\activate.bat && python app.py"'
       }
     }
   }
 
   post {
-    success { echo "Build succeeded!" }
-    failure { echo "Build failed." }
+    success {
+      echo "Build succeeded!"
+    }
+    failure {
+      echo "Build failed."
+    }
   }
 }

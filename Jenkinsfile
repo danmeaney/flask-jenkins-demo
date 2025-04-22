@@ -10,9 +10,7 @@ pipeline {
 
     stage('Setup Python') {
       steps {
-        // Recreate venv using --copies to avoid permission issues
-        bat 'python -m venv --copies venv'
-        // Activate and install dependencies
+        bat 'python -m venv venv'
         bat 'call venv\\Scripts\\activate.bat && pip install -r requirements.txt'
       }
     }
@@ -31,20 +29,30 @@ pipeline {
 
     stage('Deploy (demo)') {
       steps {
-        // Kill any old Python processes
+        // Kill any stray python processes
         bat 'taskkill /F /IM python.exe || exit 0'
-        // Start Flask in the background with pythonw, logging to flask.log
-        bat 'cd %WORKSPACE% && call venv\\Scripts\\activate.bat && start "" /min pythonw app.py > flask.log 2>&1'
+
+        // Launch Flask in a new, minimized cmd window and capture logs
+        bat '''
+          start "flask-demo" /min cmd /c ^
+            "cd /d %WORKSPACE% && ^
+             call venv\\Scripts\\activate.bat && ^
+             pythonw app.py > flask.log 2>&1"
+        '''
       }
     }
   }
 
   post {
     success {
-      echo 'Build succeeded!'
+      echo "Build succeeded!"
     }
     failure {
-      echo 'Build failed.'
+      echo "Build failed."
+    }
+    always {
+      // Archive the flask.log so you can download it from the build page
+      archiveArtifacts artifacts: 'flask.log', allowEmptyArchive: false
     }
   }
 }

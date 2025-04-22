@@ -29,18 +29,18 @@ pipeline {
 
     stage('Deploy (demo)') {
       steps {
-        // kill any stray Flask/python processes
+        // kill any stray Python processes so we start fresh
         bat 'taskkill /F /IM python.exe || exit 0'
 
-        // cd into workspace, activate venv, then start pythonw in the background
-        // redirect both stdout & stderr into flask.log
-        bat 'cd /d %WORKSPACE% && call venv\\Scripts\\activate && start "" /min pythonw app.py 1> flask.log 2>&1'
+        // cd into workspace, activate venv, then launch Flask in a new, minimized cmd window
+        // redirect stdout & stderr into flask.log
+        bat 'cd /d %WORKSPACE% && call venv\\Scripts\\activate && start "flask-demo" /min cmd /C "python app.py >> flask.log 2>&1"'
       }
     }
   }
 
   post {
-    // make sure we always archive the log so you can inspect it
+    // always grab the log so you can see what happened
     always {
       archiveArtifacts artifacts: 'flask.log', fingerprint: true
     }
